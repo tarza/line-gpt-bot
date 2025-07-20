@@ -7,6 +7,11 @@ const axios = require('axios');
 const app = express();
 app.use(express.json());
 
+// ---> โค้ดสำหรับทดสอบที่ย้ายมาตำแหน่งที่ถูกต้อง <---
+app.get('/test', (req, res) => {
+  res.status(200).send('Hello! The server is working!');
+});
+
 // ดึงค่าจาก Environment Variables ที่เราจะไปตั้งค่าใน Render
 const config = {
   channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
