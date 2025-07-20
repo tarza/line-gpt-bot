@@ -1,0 +1,14 @@
+{
+  "name": "line-gpt-bot",
+  "version": "1.0.0",
+  "description": "LINE Bot with GPT on Render",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@line/bot-sdk": "^8.4.1",
+    "express": "^4.19.2",
+    "axios": "^1.7.2"
+  }
+}
