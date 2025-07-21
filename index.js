@@ -13,7 +13,9 @@ app.post('/ask-ai', async (req, res) => {
   try {
     const userMessage = req.body.message;
 
-    if (!userMessage) {
+    // --- จุดที่แก้ไข ---
+    // ตรวจสอบว่า "ถ้าไม่มี" ข้อความส่งมา
+    if (!userMessage) { 
       return res.status(400).json({ error: 'No message provided' });
     }
 
@@ -32,7 +34,7 @@ async function fetchGPT(userMessage) {
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
-        model: 'gpt-3.5-turbo', // <--- แก้ไขจาก gpt-4 เป็น gpt-3.5-turbo ตรงนี้
+        model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',
