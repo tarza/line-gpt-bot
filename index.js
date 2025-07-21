@@ -6,14 +6,13 @@ const cors = require('cors');
 
 const app = express();
 app.use(express.json());
-app.use(cors()); // เปิดใช้งาน CORS เพื่อให้หน้าเว็บจาก GitHub Pages เรียกเข้ามาได้
+app.use(cors());
 
 // --- นี่คือประตูสำหรับให้หน้าเว็บส่งคำถามเข้ามา ---
 app.post('/ask-ai', async (req, res) => {
   try {
     const userMessage = req.body.message;
 
-    // --- จุดที่แก้ไข ---
     // ตรวจสอบว่า "ถ้าไม่มี" ข้อความส่งมา
     if (!userMessage) { 
       return res.status(400).json({ error: 'No message provided' });
@@ -73,4 +72,6 @@ async function fetchGPT(userMessage) {
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`AI backend is running on port ${port}`);
+  // บรรทัดสำหรับ Debug เพื่อดูว่าเซิร์ฟเวอร์ใช้ Key ตัวไหน
+  console.log(`Using API Key starting with: ${process.env.OPENAI_API_KEY.substring(0, 8)}...`);
 });
