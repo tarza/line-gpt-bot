@@ -8,12 +8,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- นี่คือประตูสำหรับให้หน้าเว็บส่งคำถามเข้ามา ---
 app.post('/ask-ai', async (req, res) => {
   try {
     const userMessage = req.body.message;
 
-    // ตรวจสอบว่า "ถ้าไม่มี" ข้อความส่งมา
     if (!userMessage) { 
       return res.status(400).json({ error: 'No message provided' });
     }
@@ -28,7 +26,10 @@ app.post('/ask-ai', async (req, res) => {
 });
 
 async function fetchGPT(userMessage) {
-  // ฟังก์ชันนี้ยังคงเหมือนเดิม ใช้คุยกับ OpenAI
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured.');
+  }
+  
   try {
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
@@ -72,6 +73,11 @@ async function fetchGPT(userMessage) {
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`AI backend is running on port ${port}`);
-  // บรรทัดสำหรับ Debug เพื่อดูว่าเซิร์ฟเวอร์ใช้ Key ตัวไหน
-  console.log(`Using API Key starting with: ${process.env.OPENAI_API_KEY.substring(0, 8)}...`);
+  
+  // โค้ด Debug ที่ปลอดภัยขึ้น
+  if (process.env.OPENAI_API_KEY) {
+    console.log(`Using API Key starting with: ${process.env.OPENAI_API_KEY.substring(0, 8)}...`);
+  } else {
+    console.error('ERROR: OPENAI_API_KEY is not set in the environment variables!');
+  }
 });
