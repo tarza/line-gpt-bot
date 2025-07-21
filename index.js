@@ -1,23 +1,26 @@
 'use strict';
 
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
+// --- Initialize Google Gemini ---
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+
 app.post('/ask-ai', async (req, res) => {
   try {
     const userMessage = req.body.message;
 
-    if (!userMessage) { 
+    if (!userMessage) {
       return res.status(400).json({ error: 'No message provided' });
     }
 
-    const gptReply = await fetchGPT(userMessage);
-    res.json({ reply: gptReply });
+    const geminiReply = await fetchGemini(userMessage);
+    res.json({ reply: geminiReply });
 
   } catch (error) {
     console.error('API Error:', error);
@@ -25,47 +28,35 @@ app.post('/ask-ai', async (req, res) => {
   }
 });
 
-async function fetchGPT(userMessage) {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not configured.');
+async function fetchGemini(userMessage) {
+  if (!process.env.GOOGLE_API_KEY) {
+    throw new Error('GOOGLE_API_KEY is not configured.');
   }
-  
+
   try {
-    const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: `คุณคือเซลล์ผู้เชี่ยวชาญเรื่องรถยนต์ไฟฟ้า Aion ตอบคำถามให้ลูกค้าอย่างมืออาชีพ สุภาพ และเข้าใจง่าย
+    const model = genAI.getGenerativeModel({ model: "gemini-pro"});
 
-            --- ข้อมูลโปรโมชันปัจจุบัน ---
-            1. โปรโมชันดอกเบี้ย 0% นาน 48 เดือน สำหรับรุ่น Aion Y Plus
-            2. ฟรี! ประกันภัยชั้น 1 และค่าจดทะเบียน
-            3. รับฟรีเครื่องชาร์จที่บ้าน (Home Charger) พร้อมค่าติดตั้ง
-            (โปรโมชันนี้หมดเขต 31 สิงหาคม 2568)
-            ---
+    const system_prompt = `คุณคือเซลล์ผู้เชี่ยวชาญเรื่องรถยนต์ไฟฟ้า Aion ตอบคำถามให้ลูกค้าอย่างมืออาชีพ สุภาพ และเข้าใจง่าย
 
-            จงใช้ข้อมูลด้านบนนี้ในการตอบคำถามเกี่ยวกับโปรโมชันล่าสุด`
-          },
-          {
-            role: 'user',
-            content: userMessage
-          }
-        ]
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    --- ข้อมูลโปรโมชันปัจจุบัน ---
+    1. โปรโมชันดอกเบี้ย 0% นาน 48 เดือน สำหรับรุ่น Aion Y Plus
+    2. ฟรี! ประกันภัยชั้น 1 และค่าจดทะเบียน
+    3. รับฟรีเครื่องชาร์จที่บ้าน (Home Charger) พร้อมค่าติดตั้ง
+    (โปรโมชันนี้หมดเขต 31 สิงหาคม 2568)
+    ---
 
-    return response.data.choices[0].message.content;
+    จงใช้ข้อมูลด้านบนนี้ในการตอบคำถามเกี่ยวกับโปรโมชันล่าสุด`;
+    
+    // Combine system prompt with user message for Gemini
+    const fullPrompt = `${system_prompt}\n\nคำถามจากลูกค้า: ${userMessage}`;
+
+    const result = await model.generateContent(fullPrompt);
+    const response = await result.response;
+    const text = response.text();
+    return text;
+    
   } catch (error) {
-    console.error('GPT Error:', error.response?.data || error.message);
+    console.error('Gemini Error:', error);
     return 'ขออภัย ระบบกำลังมีปัญหา กรุณาลองใหม่อีกครั้งในภายหลัง';
   }
 }
@@ -73,11 +64,9 @@ async function fetchGPT(userMessage) {
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`AI backend is running on port ${port}`);
-  
-  // โค้ด Debug ที่ปลอดภัยขึ้น
-  if (process.env.OPENAI_API_KEY) {
-    console.log(`Using API Key starting with: ${process.env.OPENAI_API_KEY.substring(0, 8)}...`);
+  if (process.env.GOOGLE_API_KEY) {
+    console.log(`Using Google API Key starting with: ${process.env.GOOGLE_API_KEY.substring(0, 8)}...`);
   } else {
-    console.error('ERROR: OPENAI_API_KEY is not set in the environment variables!');
+    console.error('ERROR: GOOGLE_API_KEY is not set in the environment variables!');
   }
 });
