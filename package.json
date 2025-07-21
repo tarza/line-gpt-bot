@@ -1,7 +1,7 @@
 {
   "name": "aion-website-ai-backend",
   "version": "1.0.0",
-  "description": "AI Backend for AION Info Website",
+  "description": "AI Backend for AION Info Website using Google Gemini",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
