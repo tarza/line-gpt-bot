@@ -9,6 +9,7 @@ app.use(express.json());
 app.use(cors());
 
 // --- Initialize Google Gemini ---
+// ตรวจสอบให้แน่ใจว่าใน Railway Variables ของคุณมี GOOGLE_API_KEY อยู่
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
 app.post('/ask-ai', async (req, res) => {
@@ -47,7 +48,6 @@ async function fetchGemini(userMessage) {
 
     จงใช้ข้อมูลด้านบนนี้ในการตอบคำถามเกี่ยวกับโปรโมชันล่าสุด`;
     
-    // Combine system prompt with user message for Gemini
     const fullPrompt = `${system_prompt}\n\nคำถามจากลูกค้า: ${userMessage}`;
 
     const result = await model.generateContent(fullPrompt);
@@ -63,10 +63,5 @@ async function fetchGemini(userMessage) {
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`AI backend is running on port ${port}`);
-  if (process.env.GOOGLE_API_KEY) {
-    console.log(`Using Google API Key starting with: ${process.env.GOOGLE_API_KEY.substring(0, 8)}...`);
-  } else {
-    console.error('ERROR: GOOGLE_API_KEY is not set in the environment variables!');
-  }
+  console.log(`AI (Gemini) backend is running on port ${port}`);
 });
